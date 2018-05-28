@@ -6,4 +6,4 @@ Search from internet
     └─factorization 
     
 ### factorization (因式分解)
--- [lambda 運算式]https://openhome.cc/Gossip/Python/LambdaExpression.html
+-- [lambda 運算式](https://openhome.cc/Gossip/Python/LambdaExpression.html)
