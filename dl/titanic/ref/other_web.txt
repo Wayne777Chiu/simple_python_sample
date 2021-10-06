@@ -1,0 +1,11 @@
+
+by Yanwei Liu 深度學習筆記(4)：使用Keras建立MLP和Linear Regression模型
+https://yanwei-liu.medium.com/%E6%B7%B1%E5%BA%A6%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-4-%E4%BD%BF%E7%94%A8keras%E5%BB%BA%E7%AB%8Bmlp%E5%92%8Clinear-regression%E6%A8%A1%E5%9E%8B-6072f1c38275
+    --> 05.Keras糖尿病預測.ipynb
+    https://colab.research.google.com/drive/1RjvgCt_QUPB7CQVTQ7DHL6qzfdfR1EYx#scrollTo=770A8o6mtIbU
+
+Sequential check
+https://keras.io/guides/sequential_model/
+Keras 中文文檔
+    --> 开始使用 Keras Sequential 顺序模型
+        --> https://keras.io/zh/getting-started/sequential-model-guide/

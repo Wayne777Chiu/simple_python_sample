@@ -1,5 +1,6 @@
 
 # refer https://www.kaggle.com/c/titanic
+# from keras.activations import deserialize
 import numpy as np # linear algebra
 import pandas as pd # data processing, csv file I/O
 
@@ -30,7 +31,7 @@ def license_alarm():
     print(decode('+--------------------------------------------------------------------------%'))
     print(decode('|'), '            Titanic - Machine Learing from Disaster  - Practice         ', decode('|'))
     print(decode('|'), '               refer https://www.kaggle.com/c/titanic                   ', decode('|'))
-    print(decode('|'), '                              v0.01                                     ', decode('|'))
+    print(decode('|'), '                              v0.02                                     ', decode('|'))
     print(decode('|'), '            Copyright (c) Wayne Chiu 2021. All Rights Reserved          ', decode('|'))
     print(decode('k--------------------------------------------------------------------------f'))
     print(decode('|'), '                                                                        ', decode('|'))
@@ -50,39 +51,89 @@ import sys
 for dirname, _, filenames in os.walk('.\data'):
     for filename in filenames:
         print(os.path.join(dirname, filename))
+        
+from keras.models import Sequential   #import Sequential model
+from keras.layers import Dense        #import Dense loyer
 
-train_data = pd.read_csv(".\data/train.csv")
-train_data.head()
+df = pd.read_csv(".\data/train.csv")
+dataset = df.values
 
-test_data = pd.read_csv('.\data/test.csv')
-test_data.head()
+train_feature_data = dataset[:,np.r_[2,4:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
+train_target_data = dataset[:,1] 
 
-women = train_data.loc[train_data.Sex == 'female']["Survived"]
-rate_women = sum(women)/len(women)
+df = pd.read_csv(".\data/test.csv")
+dataset = df.values
 
-print("% of women who survived:", rate_women)
+test_feature_data = dataset[:,np.r_[1,3:7]]
 
-men = train_data.loc[train_data.Sex == 'male']["Survived"]
-rate_men = sum(men)/len(men)
-print("% of men who survived:", rate_men)
+df = pd.read_csv(".\data/gender_submission.csv")
+dataset = df.values
+
+test_target_data = dataset[:,1]
+
+
+model = Sequential()
+model.add(Dense(8, input_shape=(8,), activation="relu"))
+model.add(Dense(8, activation='relu'))                      #hidden layer
+model.add(1, activation="sigmoid")             #output layer 
+
+model.summary()
+
+model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+
+model.fit(train_feature_data,train_target_data, epochs=10, batch_size=10, verbose=0)
+
+loss, accuracy = model.evaluate(train_feature_data, train_target_data)
+print("訓練資料集的準確度 = {:.2f}".format(accuracy))
+loss, accuracy = model.evaluate(test_feature_data, test_target_data)
+print("測試資料集的準確度 = {:.2f}".format(accuracy))
+# 測試資料集的預測值
+Y_pred = model.predict_classes(test_feature_data, batch_size=10, verbose=0)
+print(Y_pred[0], Y_pred[1]) 
+
+
+# train_label_data= dataset[:,9:10]
+# print(train_data)
+# print(train_label_data)
+# train_data = pd.read_csv(".\data/train.csv")
+# dataset = train_data.values
+# print(type(dataset))
 
 
 
-from sklearn.ensemble import RandomForestClassifier
+# print(train_data+train_1_data)
+# train_data.head()
 
-y = train_data["Survived"]
 
-features = ["Pclass", "Sex", "SibSp", "Parch"]
-X = pd.get_dummies(train_data[features])
-X_test = pd.get_dummies(test_data[features])
+# test_data = pd.read_csv('.\data/test.csv')
+# test_data.head()
 
-model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)
-model.fit(X, y)
-predictions = model.predict(X_test)
+# women = train_data.loc[train_data.Sex == 'female']["Survived"]
+# rate_women = sum(women)/len(women)
 
-output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': predictions})
-output.to_csv('submission.csv', index=False)
-print("Your submission was successfully saved!")
+# print("% of women who survived:", rate_women)
+
+# men = train_data.loc[train_data.Sex == 'male']["Survived"]
+# rate_men = sum(men)/len(men)
+# print("% of men who survived:", rate_men)
+
+
+
+# from sklearn.ensemble import RandomForestClassifier
+
+# y = train_data["Survived"]
+
+# features = ["Pclass", "Sex", "SibSp", "Parch"]
+# X = pd.get_dummies(train_data[features])
+# X_test = pd.get_dummies(test_data[features])
+
+# model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)
+# model.fit(X, y)
+# predictions = model.predict(X_test)
+
+# output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': predictions})
+# output.to_csv('submission.csv', index=False)
+# print("Your submission was successfully saved!")
 
 
 if __name__ == '__main__':
