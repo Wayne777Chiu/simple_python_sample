@@ -31,7 +31,7 @@ def license_alarm():
     print(decode('+--------------------------------------------------------------------------%'))
     print(decode('|'), '            Titanic - Machine Learing from Disaster  - Practice         ', decode('|'))
     print(decode('|'), '               refer https://www.kaggle.com/c/titanic                   ', decode('|'))
-    print(decode('|'), '                              v0.03                                     ', decode('|'))
+    print(decode('|'), '                              v0.04                                     ', decode('|'))
     print(decode('|'), '            Copyright (c) Wayne Chiu 2021. All Rights Reserved          ', decode('|'))
     print(decode('k--------------------------------------------------------------------------f'))
     print(decode('|'), '                                                                        ', decode('|'))
@@ -42,9 +42,8 @@ def license_alarm():
 def decode(x):
     return (''.join(dicArray.get(i,i.encode('utf-8')).decode('utf-8') for i in x))
 
-def main():
-    license_alarm()
-    #print(serial_number_plus(),decode('------------------------------------------------------------------------'))
+license_alarm()
+#print(serial_number_plus(),decode('------------------------------------------------------------------------'))
     
 import os
 import sys
@@ -55,20 +54,25 @@ for dirname, _, filenames in os.walk('.\data'):
 from keras.models import Sequential   #import Sequential model
 from keras.layers import Dense        #import Dense loyer
 
-df = pd.read_csv(".\data/train.csv")
+
+df = pd.read_csv(".\data/train.csv").replace(regex={'female': 1, 'male': 0})   #set female as 1  and male as 0
+df = df.fillna(0)     #fill with NaN to zero
 dataset = df.values
 
-train_feature_data = dataset[:,np.r_[2,6:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
+#set random to noise.
+np.random.shuffle(dataset)
+
+# train data set
+train_feature_data = dataset[:,np.r_[2,4:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
 train_feature_data = np.asarray(train_feature_data).astype('float32')
 train_target_data = dataset[:,1] 
 train_target_data = np.asarray(train_target_data).astype('float32')
 
-print(train_feature_data)
-print(train_target_data)
-
-df = pd.read_csv(".\data/test.csv")
-dataset = df.values
-test_feature_data = dataset[:,np.r_[1,5:7]]
+# test data set
+test_data_df = pd.read_csv(".\data/test.csv").replace(regex={'female': 1, 'male': 0})  #set female as 1  and male as 0
+test_data_df = test_data_df.fillna(0)   #fill with NaN to zero
+dataset = test_data_df.values
+test_feature_data = dataset[:,np.r_[1,3:7]]   #feature: cloumn_1, column_3, column_4, column_5, column_6
 test_feature_data = np.asarray(test_feature_data).astype('float32')
 
 df = pd.read_csv(".\data/gender_submission.csv")
@@ -76,79 +80,39 @@ dataset = df.values
 test_target_data = dataset[:,1]
 test_target_data = np.asarray(test_target_data).astype('float32')
 
-# print(test_feature_data)
+# print(train_feature_data)
 # print(train_target_data)
 
 model = Sequential()
-model.add(Dense(3, input_shape=(3,), activation="relu"))    #input  layer
-model.add(Dense(3, activation='relu'))                      #hidden layer
-model.add(Dense(1, activation="sigmoid"))                          #output layer 
+model.add(Dense(5, input_shape=(5,), activation="relu"))    #input  layer    5 cell input  
+model.add(Dense(6, activation='relu'))                      #hidden layer
+model.add(Dense(7, activation='relu'))                      #hidden layer
+model.add(Dense(8, activation='relu'))                      #hidden layer
+model.add(Dense(1, activation="sigmoid"))                   #output layer 
 
 model.summary()
 
 model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-[print(i.shape, i.dtype) for i in model.inputs]
-[print(o.shape, o.dtype) for o in model.outputs]
-[print(l.name, l.input_shape, l.dtype) for l in model.layers]
-print("=====================================================")
+# [print(i.shape, i.dtype) for i in model.inputs]
+# [print(o.shape, o.dtype) for o in model.outputs]
+# [print(l.name, l.input_shape, l.dtype) for l in model.layers]
+# print("=====================================================")
 model.fit(train_feature_data,train_target_data, epochs=10, batch_size=10, verbose=0)
 
 loss, accuracy = model.evaluate(train_feature_data, train_target_data)
-print("訓練資料集的準確度 = {:.2f}".format(accuracy))
+print("Train data accuracy = {:.2f}".format(accuracy))
 loss, accuracy = model.evaluate(test_feature_data, test_target_data)
-print("測試資料集的準確度 = {:.2f}".format(accuracy))
-# 測試資料集的預測值
+print("Test data accuracy = {:.2f}".format(accuracy))
+# Test data prediction
 Y_pred = model.predict(test_feature_data)
-print([i for item in Y_pred for i in item])
+# print([i for item in Y_pred for i in item])
 classes_Y_pred = np.around(Y_pred).astype(int)  
 print([i for item in classes_Y_pred for i in item])
-print(Y_pred[0], Y_pred[1]) 
 
+output = pd.DataFrame({'PassengerId': test_data_df.PassengerId, 'Survived': [i for item in classes_Y_pred for i in item]})
+output.to_csv('submission.csv', index=False)
+print("Your submission was successfully saved!")
 
-# train_label_data= dataset[:,9:10]
-# print(train_data)
-# print(train_label_data)
-# train_data = pd.read_csv(".\data/train.csv")
-# dataset = train_data.values
-# print(type(dataset))
-
-
-
-# print(train_data+train_1_data)
-# train_data.head()
-
-
-# test_data = pd.read_csv('.\data/test.csv')
-# test_data.head()
-
-# women = train_data.loc[train_data.Sex == 'female']["Survived"]
-# rate_women = sum(women)/len(women)
-
-# print("% of women who survived:", rate_women)
-
-# men = train_data.loc[train_data.Sex == 'male']["Survived"]
-# rate_men = sum(men)/len(men)
-# print("% of men who survived:", rate_men)
-
-
-
-# from sklearn.ensemble import RandomForestClassifier
-
-# y = train_data["Survived"]
-
-# features = ["Pclass", "Sex", "SibSp", "Parch"]
-# X = pd.get_dummies(train_data[features])
-# X_test = pd.get_dummies(test_data[features])
-
-# model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)
-# model.fit(X, y)
-# predictions = model.predict(X_test)
-
-# output = pd.DataFrame({'PassengerId': test_data.PassengerId, 'Survived': predictions})
-# output.to_csv('submission.csv', index=False)
-# print("Your submission was successfully saved!")
-
-
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
