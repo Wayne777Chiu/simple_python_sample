@@ -31,7 +31,7 @@ def license_alarm():
     print(decode('+--------------------------------------------------------------------------%'))
     print(decode('|'), '            Titanic - Machine Learing from Disaster  - Practice         ', decode('|'))
     print(decode('|'), '               refer https://www.kaggle.com/c/titanic                   ', decode('|'))
-    print(decode('|'), '                              v0.02                                     ', decode('|'))
+    print(decode('|'), '                              v0.03                                     ', decode('|'))
     print(decode('|'), '            Copyright (c) Wayne Chiu 2021. All Rights Reserved          ', decode('|'))
     print(decode('k--------------------------------------------------------------------------f'))
     print(decode('|'), '                                                                        ', decode('|'))
@@ -58,29 +58,40 @@ from keras.layers import Dense        #import Dense loyer
 df = pd.read_csv(".\data/train.csv")
 dataset = df.values
 
-train_feature_data = dataset[:,np.r_[2,4:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
+train_feature_data = dataset[:,np.r_[2,6:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
+train_feature_data = np.asarray(train_feature_data).astype('float32')
 train_target_data = dataset[:,1] 
+train_target_data = np.asarray(train_target_data).astype('float32')
+
+print(train_feature_data)
+print(train_target_data)
 
 df = pd.read_csv(".\data/test.csv")
 dataset = df.values
-
-test_feature_data = dataset[:,np.r_[1,3:7]]
+test_feature_data = dataset[:,np.r_[1,5:7]]
+test_feature_data = np.asarray(test_feature_data).astype('float32')
 
 df = pd.read_csv(".\data/gender_submission.csv")
 dataset = df.values
-
 test_target_data = dataset[:,1]
+test_target_data = np.asarray(test_target_data).astype('float32')
 
+# print(test_feature_data)
+# print(train_target_data)
 
 model = Sequential()
-model.add(Dense(8, input_shape=(8,), activation="relu"))
-model.add(Dense(8, activation='relu'))                      #hidden layer
-model.add(1, activation="sigmoid")             #output layer 
+model.add(Dense(3, input_shape=(3,), activation="relu"))    #input  layer
+model.add(Dense(3, activation='relu'))                      #hidden layer
+model.add(Dense(1, activation="sigmoid"))                          #output layer 
 
 model.summary()
 
 model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
+[print(i.shape, i.dtype) for i in model.inputs]
+[print(o.shape, o.dtype) for o in model.outputs]
+[print(l.name, l.input_shape, l.dtype) for l in model.layers]
+print("=====================================================")
 model.fit(train_feature_data,train_target_data, epochs=10, batch_size=10, verbose=0)
 
 loss, accuracy = model.evaluate(train_feature_data, train_target_data)
@@ -88,7 +99,10 @@ print("訓練資料集的準確度 = {:.2f}".format(accuracy))
 loss, accuracy = model.evaluate(test_feature_data, test_target_data)
 print("測試資料集的準確度 = {:.2f}".format(accuracy))
 # 測試資料集的預測值
-Y_pred = model.predict_classes(test_feature_data, batch_size=10, verbose=0)
+Y_pred = model.predict(test_feature_data)
+print([i for item in Y_pred for i in item])
+classes_Y_pred = np.around(Y_pred).astype(int)  
+print([i for item in classes_Y_pred for i in item])
 print(Y_pred[0], Y_pred[1]) 
 
 
