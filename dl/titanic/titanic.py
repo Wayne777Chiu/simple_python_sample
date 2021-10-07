@@ -88,7 +88,7 @@ model.add(Dense(5, input_shape=(5,), activation="relu"))    #input  layer    5 c
 model.add(Dense(6, activation='relu'))                      #hidden layer
 model.add(Dense(7, activation='relu'))                      #hidden layer
 model.add(Dense(8, activation='relu'))                      #hidden layer
-model.add(Dense(1, activation="sigmoid"))                   #output layer 
+model.add(Dense(1,activation="sigmoid"))                   #output layer 
 
 model.summary()
 

@@ -1,3 +1,54 @@
+//====================================================================================================================================================
+
+(base) D:\nb_tmp\tmp\code\python_code\simple_python_sample\dl\titanic>python titanic.py
+╔══════════════════════════════════════════════════════════════════════════╗
+║             Titanic - Machine Learing from Disaster  - Practice          ║
+║                refer https://www.kaggle.com/c/titanic                    ║
+║                               v0.04                                      ║
+║             Copyright (c) Wayne Chiu 2021. All Rights Reserved           ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║                                                                          ║
+║    1. Create the sample code for studying Deep Learning                  ║
+║               to be continue...                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+.\data\gender_submission.csv
+.\data\test.csv
+.\data\train.csv
+2021-10-07 16:48:42.858824: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-10-07 16:48:43.403185: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1510] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 2777 MB memory:  -> device: 0, name: NVIDIA GeForce GTX 1050 Ti, pci bus id: 0000:01:00.0, compute capability: 6.1
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+dense (Dense)                (None, 5)                 30
+_________________________________________________________________
+dense_1 (Dense)              (None, 6)                 36
+_________________________________________________________________
+dense_2 (Dense)              (None, 7)                 49
+_________________________________________________________________
+dense_3 (Dense)              (None, 8)                 64
+_________________________________________________________________
+dense_4 (Dense)              (None, 1)                 9
+=================================================================
+Total params: 188
+Trainable params: 188
+Non-trainable params: 0
+_________________________________________________________________
+2021-10-07 16:48:43.618839: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:185] None of the MLIR Optimization Passes are enabled (registered 2)
+28/28 [==============================] - 0s 2ms/step - loss: 0.4752 - accuracy: 0.7879
+Train data accuracy = 0.79
+14/14 [==============================] - 0s 2ms/step - loss: 0.3106 - accuracy: 0.9856
+Test data accuracy = 0.99
+[0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 
+0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 
+0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0]
+Your submission was successfully saved!
+
+(base) D:\nb_tmp\tmp\code\python_code\simple_python_sample\dl\titanic>
+
+
+//====================================================================================================================================================
 (base) D:\nb_tmp\tmp\code\python_code\simple_python_sample\dl\titanic>python titanic.py
 ╔══════════════════════════════════════════════════════════════════════════╗
 ║             Titanic - Machine Learing from Disaster  - Practice          ║
