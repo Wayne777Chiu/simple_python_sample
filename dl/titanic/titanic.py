@@ -42,40 +42,55 @@ def license_alarm():
 def decode(x):
     return (''.join(dicArray.get(i,i.encode('utf-8')).decode('utf-8') for i in x))
 
+def showplt():
+    import matplotlib.pyplot as plt
+
+    pd.DataFrame(history.history).plot(figsize=(8, 5))
+    plt.grid(True)
+    plt.gca().set_ylim(0, 1)  # Set the vertical range to [0-1]
+    plt.show()
+
 license_alarm()
 #print(serial_number_plus(),decode('------------------------------------------------------------------------'))
     
 import os
 import sys
-for dirname, _, filenames in os.walk('.\data'):
+for dirname, _, filenames in os.walk('./kaggle/input'):
     for filename in filenames:
         print(os.path.join(dirname, filename))
         
-from keras.models import Sequential   #import Sequential model
-from keras.layers import Dense        #import Dense loyer
+# from keras.models import Sequential   #import Sequential model
+# from keras.layers import Dense,Dropout        #import Dense loyer
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense,Flatten
 
-
-df = pd.read_csv(".\data/train.csv").replace(regex={'female': 1, 'male': 0})   #set female as 1  and male as 0
+df = pd.read_csv("./kaggle/input/titanic/train.csv").replace(regex={'female': 1, 'male': 0})   #set female as 1  and male as 0
 df = df.fillna(0)     #fill with NaN to zero
 dataset = df.values
 
 #set random to noise.
 np.random.shuffle(dataset)
 
-# train data set
-train_feature_data = dataset[:,np.r_[2,4:8]]  #feature: cloumn_2, column_4, column_5, column_6,, column_7
-train_feature_data = np.asarray(train_feature_data).astype('float32')
-train_target_data = dataset[:,1] 
-train_target_data = np.asarray(train_target_data).astype('float32')
+# train data set # validation data set
+#feature: cloumn_2, column_4, column_5, column_6,, column_7
+train_feature_data, valid_feature_data = dataset[:777,np.r_[2,4:8]], dataset[777:,np.r_[2,4:8]]
+# train_feature_data -= train_feature_data.mean(axis=0)
+# train_feature_data /= 255.0
+
+# valid_feature_data -= valid_feature_data.mean(axis=0)
+# valid_feature_data /= 255.0
+train_feature_data, valid_feature_data = np.asarray(train_feature_data).astype('float32'), np.asarray(valid_feature_data).astype('float32')
+train_target_data, valid_target_data = dataset[:777,1], dataset[777:,1] 
+train_target_data, valid_target_data = np.asarray(train_target_data).astype('float32'), np.asarray(valid_target_data).astype('float32')
 
 # test data set
-test_data_df = pd.read_csv(".\data/test.csv").replace(regex={'female': 1, 'male': 0})  #set female as 1  and male as 0
+test_data_df = pd.read_csv("./kaggle/input/titanic/test.csv").replace(regex={'female': 1, 'male': 0})  #set female as 1  and male as 0
 test_data_df = test_data_df.fillna(0)   #fill with NaN to zero
 dataset = test_data_df.values
 test_feature_data = dataset[:,np.r_[1,3:7]]   #feature: cloumn_1, column_3, column_4, column_5, column_6
 test_feature_data = np.asarray(test_feature_data).astype('float32')
 
-df = pd.read_csv(".\data/gender_submission.csv")
+df = pd.read_csv("./kaggle/input/titanic/gender_submission.csv")
 dataset = df.values
 test_target_data = dataset[:,1]
 test_target_data = np.asarray(test_target_data).astype('float32')
@@ -84,10 +99,10 @@ test_target_data = np.asarray(test_target_data).astype('float32')
 # print(train_target_data)
 
 model = Sequential()
-model.add(Dense(5, input_shape=(5,), activation="relu"))    #input  layer    5 cell input  
-model.add(Dense(6, activation='relu'))                      #hidden layer
-model.add(Dense(7, activation='relu'))                      #hidden layer
-model.add(Dense(8, activation='relu'))                      #hidden layer
+model.add(Flatten(input_shape=(5,)))    #input  layer    5 cell input  
+model.add(Dense(25, activation='relu'))                      #hidden layer
+model.add(Dense(625, activation='relu'))                      #hidden layer
+
 model.add(Dense(1,activation="sigmoid"))                   #output layer 
 
 model.summary()
@@ -98,17 +113,27 @@ model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"]
 # [print(o.shape, o.dtype) for o in model.outputs]
 # [print(l.name, l.input_shape, l.dtype) for l in model.layers]
 # print("=====================================================")
-model.fit(train_feature_data,train_target_data, epochs=10, batch_size=10, verbose=0)
 
-loss, accuracy = model.evaluate(train_feature_data, train_target_data)
-print("Train data accuracy = {:.2f}".format(accuracy))
-loss, accuracy = model.evaluate(test_feature_data, test_target_data)
-print("Test data accuracy = {:.2f}".format(accuracy))
+history = model.fit(train_feature_data, train_target_data, epochs= 100, validation_data=(valid_feature_data, valid_target_data))
+
+showplt()
+
+
+
+# model.fit(train_feature_data,train_target_data, epochs=10, batch_size=10, verbose=0)
+
+# loss, accuracy = model.evaluate(train_feature_data, train_target_data)
+# print("Train data accuracy = {:.2f}".format(accuracy))
+# loss, accuracy = model.evaluate(test_feature_data, test_target_data)
+# print("Test data accuracy = {:.2f}".format(accuracy))
+
 # Test data prediction
 Y_pred = model.predict(test_feature_data)
-# print([i for item in Y_pred for i in item])
+# # print([i for item in Y_pred for i in item])
 classes_Y_pred = np.around(Y_pred).astype(int)  
-print([i for item in classes_Y_pred for i in item])
+# print([i for item in classes_Y_pred for i in item])
+loss, accuracy = model.evaluate(test_feature_data, test_target_data)
+print("Test data accuracy = {:.2f}".format(accuracy))
 
 output = pd.DataFrame({'PassengerId': test_data_df.PassengerId, 'Survived': [i for item in classes_Y_pred for i in item]})
 output.to_csv('submission.csv', index=False)
