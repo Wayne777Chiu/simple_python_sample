@@ -1,0 +1,18 @@
+/*.patch
+*.ini
+# The .cache directory will be used to cache toolchain capabilities if
+# no suitable out-of-tree directory is found.
+.cache
+
+__pycache__
+
+#other svn
+.svn
+
+tags
+.project
+.cproject
+.xxproject
+.envrc
+.vscode
+desktop.ini
