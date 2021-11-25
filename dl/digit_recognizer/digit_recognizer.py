@@ -51,17 +51,6 @@ def showplt(history):
     plt.gca().set_ylim(0, 1)  # Set the vertical range to [0-1]
     plt.show()
 
-license_alarm()
-#print(serial_number_plus(),decode('------------------------------------------------------------------------'))
-    
-import os
-import sys
-for dirname, _, filenames in os.walk('./kaggle/input'):
-    for filename in filenames:
-        print(os.path.join(dirname, filename))
-
-
-
 def show_train_history(train_history, train, validation):
     plt.plot(train_history.history[train])
     plt.plot(train_history.history[validation])
@@ -70,6 +59,14 @@ def show_train_history(train_history, train, validation):
     plt.xlabel('Epoch')
     plt.show()
 
+
+license_alarm()
+#print(serial_number_plus(),decode('------------------------------------------------------------------------'))
+    
+import os
+for dirname, _, filenames in os.walk('./kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
 
 
 # from keras.models import Sequential           #import Sequential model
@@ -100,20 +97,20 @@ X_train, X_valid, y_train, y_valid = train_test_split(X_train_data, y_train_data
 X_train = X_train.values.reshape(-1, 28, 28, 1)
 X_valid = X_valid.values.reshape(-1, 28, 28, 1)
 
-EPOCH = 30
-LEARNING_RATE = 0.00025
+EPOCH = 15
+LEARNING_RATE = 0.0005
 
 model = Sequential()
 
 model.add(Conv2D(32, (5,5), activation="relu", padding="same", data_format="channels_last", input_shape=(28,28,1)))
 model.add(Conv2D(32, (5,5), activation="relu", padding="same", data_format="channels_last"))
 model.add(MaxPool2D(pool_size=(2,2), data_format="channels_last"))
-model.add(Dropout(0.25))
+model.add(Dropout(0.5))
 
 model.add(Conv2D(64, (5,5), activation="relu", padding="same", data_format="channels_last"))
 model.add(Conv2D(64, (5,5), activation="relu", padding="same", data_format="channels_last"))
 model.add(MaxPool2D(pool_size=(2,2), data_format="channels_last"))
-model.add(Dropout(0.25))
+model.add(Dropout(0.5))
 
 model.add(Flatten())
 model.add(Dense(128,activation="relu"))
