@@ -34,7 +34,7 @@ def license_alarm():
     print(decode('+--------------------------------------------------------------------------%'))
     print(decode('|'), '              Store-Sales-time-series-forecasting  - Practice           ', decode('|'))
     print(decode('|'), ' refer https://www.kaggle.com/c/store-sales-time-series-forecasting     ', decode('|'))
-    print(decode('|'), '                              v0.02                                     ', decode('|'))
+    print(decode('|'), '                              v0.03                                     ', decode('|'))
     print(decode('|'), '            Copyright (c) Wayne Chiu 2021. All Rights Reserved          ', decode('|'))
     print(decode('k--------------------------------------------------------------------------f'))
     print(decode('|'), '                                                                        ', decode('|'))
@@ -73,10 +73,14 @@ def data_eda(src_df):
     print(src_df.isna().sum())
 
 
-train_df = pd.read_csv(DataPath+"train.csv", index_col=0)
+# train_df = pd.read_csv(DataPath+"train.csv", index_col=0)
+train_df = pd.read_csv(DataPath+"train.csv")
+train_data = train_df.copy()
 print(decode('------')+"train_df"+decode('------'))
 # data_eda(train_df)
-test_df = pd.read_csv(DataPath+"test.csv", index_col=0)
+# test_df = pd.read_csv(DataPath+"test.csv", index_col=0)
+test_df = pd.read_csv(DataPath+"test.csv")
+test_data = test_df.copy()
 print(decode('------')+"test_df"+decode('------'))
 # data_eda(test_df)
 oil_df = pd.read_csv(DataPath+"oil.csv")
@@ -106,6 +110,67 @@ pre_data = pre_data.merge(transaction_df, on = ['date','store_nbr'] ,how='left')
 #       (type_y base on "stores.csv")
 pre_data =pre_data.rename(columns={"type_x" : "event_type", "type_y" : "store_type"})
 
+print("=========holiday data merge================")
+train_data = train_data.merge(holiday_event_df, on = 'date' ,how='left')
+test_data = test_data.merge(holiday_event_df, on = 'date' ,how='left')
+
+train_data = train_data.rename(columns={"type" : "event_type"})
+test_data  = test_data.rename(columns={"type" : "event_type"})
+train_data["event_type"] = train_data.event_type.apply(lambda x : 6 if x=='Additional' else (
+                                                                  5 if x=='Bridge' else (
+                                                                  4 if x=='Event' else (
+                                                                  3 if x=='Holiday' else (
+                                                                  2 if x=='Transfer' else (
+                                                                  1 if x=='Work Day' else 0))))))
+test_data["event_type"] = test_data.event_type.apply(lambda x : 6 if x=='Additional' else (
+                                                                  5 if x=='Bridge' else (
+                                                                  4 if x=='Event' else (
+                                                                  3 if x=='Holiday' else (
+                                                                  2 if x=='Transfer' else (
+                                                                  1 if x=='Work Day' else 0))))))
+train_data["transferred"] = train_data.transferred.apply(lambda x: 1 if x=='TRUE' else 0)
+test_data["transferred"] = test_data.transferred.apply(lambda x: 1 if x=='TRUE' else 0)
+
+train_data["locale"] = train_data.locale.apply(lambda x : 3 if x=='National' else (
+                                                                  2 if x=='Regional' else (
+                                                                  1 if x=='Local' else 0 )))
+test_data["locale"] = test_data.locale.apply(lambda x : 3 if x=='National' else (
+                                                                  2 if x=='Regional' else (
+                                                                  1 if x=='Local' else 0)))
+
+train_data = train_data.drop(columns={'locale_name','description'})
+test_data  = test_data.drop(columns={'locale_name','description'})
+
+
+
+from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
+
+#check Categorical variable
+object_cols = [cname for cname in train_data.columns 
+               if train_data[cname].dtype == "object" 
+               and cname != "date"]
+print("Categorical variables:")
+print(object_cols) 
+# train_data[object_cols].unique()    #item name
+print(train_data[object_cols].nunique())  #number 
+
+oen = OrdinalEncoder()
+train_data[object_cols] = oen.fit_transform(train_data[object_cols])
+oen = OrdinalEncoder()
+test_data[object_cols]  = oen.fit_transform(test_data[object_cols])
+
+print("=========oil data merge================")
+train_data = train_data.merge(oil_df, on = 'date' ,how='left')
+train_data["dcoilwtico"] = train_data.dcoilwtico.fillna(0)     #fill with NaN to zero
+test_data = test_data.merge(oil_df, on = 'date' ,how='left')
+test_data["dcoilwtico"] = test_data.dcoilwtico.fillna(0)     #fill with NaN to zero
+
+print("=========transaction data merge================")
+train_data = train_data.merge(transaction_df, on = ['date','store_nbr'] ,how='left')
+test_data  = test_data.merge(transaction_df, on = ['date','store_nbr'] ,how='left')
+train_data["transactions"] = train_data.transactions.fillna(0)     #fill with NaN to zero
+test_data["transactions"] = test_data.transactions.fillna(0)       #fill with NaN to zero
+
 #change date data
 pre_data['date'] = pd.to_datetime(pre_data['date'])
 pre_data['year'] = pre_data['date'].dt.year
@@ -113,6 +178,56 @@ pre_data['month'] = pre_data['date'].dt.month
 pre_data['week'] = pre_data['date'].dt.isocalendar().week
 pre_data['quarter'] = pre_data['date'].dt.quarter
 pre_data['day_of_week'] = pre_data['date'].dt.day_name()
+
+print("=========date data merge================")
+train_data['date']      = pd.to_datetime(train_data['date'])
+# train_data['year']        = train_data['date'].dt.year
+train_data['month']       = train_data['date'].dt.month
+train_data['quarter']     = train_data['date'].dt.quarter
+train_data['day_of_week'] = train_data['date'].dt.dayofweek
+# train_data['day_of_week'] = train_data['date'].dt.day_name()
+
+test_data['date']      = pd.to_datetime(test_data['date'])
+# test_data['year']        = test_data['date'].dt.year
+test_data['month']       = test_data['date'].dt.month
+test_data['quarter']     = test_data['date'].dt.quarter
+test_data['day_of_week'] = test_data['date'].dt.dayofweek
+
+print("=========stores data merge================")
+# train_data.insert(loc=7, column='type', value=store_df['type'])  #not coresponse related row data.
+#combine data (store_df) base on store_nbr
+train_data = train_data.merge(store_df, on = 'store_nbr' ,how='left')
+train_data  = train_data.rename(columns={"type" : "store_type"})
+train_data["store_type"] = train_data.store_type.apply(lambda x : 5 if x=='A' else (
+                                                                  4 if x=='B' else (
+                                                                  3 if x=='C' else (
+                                                                  2 if x=='D' else (
+                                                                  1 if x=='E' else 0)))))
+test_data  = test_data.merge(store_df, on = 'store_nbr' ,how='left')
+test_data  = test_data.rename(columns={"type" : "store_type"})
+test_data["store_type"] = test_data.store_type.apply(lambda x : 5 if x=='A' else (
+                                                                4 if x=='B' else (
+                                                                3 if x=='C' else (
+                                                                2 if x=='D' else (
+                                                                1 if x=='E' else 0)))))
+
+train_data = train_data.drop(columns={'city','state'})
+test_data  = test_data.drop(columns={'city','state'})
+
+#fill with 0
+# pre_data["transactions"] = pre_data.transactions.apply(lambda x: 0 if x=='female' else 0)
+pre_data["transactions"] = pre_data.transactions.fillna(0)     #fill with NaN to zero
+# data_eda(pre_data)
+
+
+#maxmin normalization
+print(decode('------')+"maxmin normalization"+decode('------'))
+transaction_minmax = MinMaxScaler()
+dcoilwtico_minmax = MinMaxScaler()
+train_data['transactions'] = transaction_minmax.fit_transform(np.array(train_data['transactions']).reshape(-1,1))
+train_data['dcoilwtico'] = dcoilwtico_minmax.fit_transform(np.array(train_data['dcoilwtico']).reshape(-1,1))
+test_data['transactions'] = transaction_minmax.fit_transform(np.array(test_data['transactions']).reshape(-1,1))
+test_data['dcoilwtico'] = dcoilwtico_minmax.fit_transform(np.array(test_data['dcoilwtico']).reshape(-1,1))
 
 #group by 'store_type' and get mean.
 storetype_sales_df = pre_data.groupby('store_type').agg({"sales" : "mean"}).reset_index().sort_values(by='sales', ascending=False)
@@ -194,7 +309,7 @@ def show_sales_oil_plt():
     figures.update_yaxes(title_text="Prices")
     figures.show()
 
-show_sales_oil_plt()
+# show_sales_oil_plt()
 
 def show_transaction_oil_plt():
     figures=make_subplots()
@@ -209,35 +324,63 @@ def show_transaction_oil_plt():
     figures.update_yaxes(title_text="Prices")
     figures.show()
 
-show_transaction_oil_plt()
+# show_transaction_oil_plt()
+
 
 import seaborn as sns
 
 #pearson correlation  (sales, transaction, oil)
-def pearson_correlation_4_oil():
-    oil_df['sales'] = date_sales_per_day_df['sales']
-    oil_df['transactions'] = transaction_per_day_df['transactions']
-    plt.figure(figsize=(11,3))
-    sns.heatmap(oil_df.corr(), annot=True)
+def pearson_correlation_4_sale(modify_sales_df):
+    modify_sales_df = modify_sales_df.drop(columns='weekly_avg_sales')
+    modify_sales_df['sales'] = date_sales_per_day_df['sales']
+    modify_sales_df['transactions'] = transaction_per_day_df['transactions']
+    modify_sales_df['dcoilwtico'] = oil_df['dcoilwtico']
+    plt.figure(figsize=(5,3))
+    sns.heatmap(modify_sales_df.corr(), annot=True)
+
     plt.show()
 
-pearson_correlation_4_oil()
+# pearson_correlation_4_sale(date_sales_per_day_df)
+
+
+from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
+
+object_cols = [cname for cname in train_df.columns 
+               if train_df[cname].dtype == "object" 
+               and cname != "date"]
+
+print("Categorical variables:")
+print(object_cols) 
+
+oen = OrdinalEncoder()
+train_df[object_cols] = oen.fit_transform(train_df[object_cols])
 
 
 
 #==================================================================================
+print(decode('--------------------------------------------------------------'))
+
+# train_data = train_df.groupby(['date']).agg({'sales':'mean', 'onpromotion':'mean'})
+# print(train_data.tail())
+# train_data.to_csv("check_data.csv")
+
+train_dataset = train_data.values
+x_train = train_dataset[0:, np.r_[2:4, 5:16]]
+y_train = train_dataset[0:, 4]
+x_train = np.asarray(x_train).astype('float32')
+y_train = np.asarray(x_train).astype('float32')
+
+test_dataset = test_data.values
+x_test = test_dataset[0:, np.r_[2:15]]
+x_test = np.asarray(x_train).astype('float32')
+# y_test = test_dataset[0:, 4]
 
 
-train_data = train_df.groupby(['date']).agg({'sales':'mean', 'onpromotion':'mean'})
-train_data.tail()
-
-
-
-x_train = train_data.copy()
-y_train = train_data.sales.copy()
-
-num_feature_input = len(x_train.columns)
+print(decode('--------------------------------------------------------------'))
+num_feature_input = x_train.shape[1]
 history_input = 30
+
+
 
 from keras.preprocessing.sequence import TimeseriesGenerator
 generator = TimeseriesGenerator(x_train, y_train, length=history_input, batch_size = 1)
@@ -251,15 +394,15 @@ def Multi_Step_LSTM_model():
     model = Sequential()    
     
     # First LSTM layer with Dropout regularisation; Set return_sequences to True to feed outputs to next layer
-    model.add(LSTM(units = 50, activation='relu', return_sequences = True, input_shape = (history_input, num_feature_input))) 
+    model.add(LSTM(units = 30, activation='relu', return_sequences = True, input_shape = (history_input, num_feature_input))) 
     model.add(Dropout(0.2))
     
-    # Second LSTM layer with Dropout regularisation; Set return_sequences to True to feed outputs to next layer
-    model.add(LSTM(units = 50,  activation='relu', return_sequences = True))                                    
-    model.add(Dropout(0.2))
+    # # Second LSTM layer with Dropout regularisation; Set return_sequences to True to feed outputs to next layer
+    # model.add(LSTM(units = 50,  activation='relu', return_sequences = True))                                    
+    # model.add(Dropout(0.2))
     
     # Final LSTM layer with Dropout regularisation; Set return_sequences to False since now we will be predicting with the output layer
-    model.add(LSTM(units = 50))
+    model.add(LSTM(units = 20))
     model.add(Dropout(0.2))
     
     # The output layer with linear activation to predict Open stock price
@@ -284,3 +427,4 @@ full_dataset = full_dataset.iloc[3000887-5:,:]
 
 full_dataset = full_dataset.groupby(['date']).agg({'sales':'mean', 'onpromotion':'mean'})
 full_dataset.to_csv("checkTest12.csv")
+
